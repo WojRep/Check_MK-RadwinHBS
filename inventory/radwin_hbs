@@ -1,0 +1,21 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+
+def inv_snmp_radwin_hbs(info):
+    firmware, ipmgmt, serial, model, mac, sfp1, sectorid = info[1][0]
+
+    node = inv_tree("hardware.system.")
+
+    node["Serial"] = serial
+    node["Model"] = model
+    node["Firmware"] = firmware
+    node["MGMT_IP"] = ipmgmt
+    node["HW MAC"] = mac
+    node["SFP_module"] = sfp1
+    node["Sector_ID"] = sectorid
+    return node
+
+
+inv_info['radwin_hbs'] = {
+    'inv_function': inv_snmp_radwin_hbs,
+}

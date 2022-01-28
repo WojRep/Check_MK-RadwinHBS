@@ -1,0 +1,102 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+#
+# Plugin for monitoring Radwin Base Station 5000 series
+#
+# Date: 2022-01-28
+#
+# Author: Wojciech Repiński
+# email: wrepinski@gmail
+#
+
+# airState OID: .1.3.6.1.4.1.4458.1000.3.1.42.1.3 (INTEGER)
+airState = {1: "init", 2: "bitFailed", 3: "inactive", 4: "spectrumMeasurent",
+            5: "scanning", 6: "cac", 7: "transceiving", 8: "standBy",
+            9: "rawAligment", 10: "deviceNot Reachable", 11: "tvwsDbDisabled", 12: "unauthorized", 13: "fail"}
+airDFS = {0: "Off", 1: "On"}
+# airATPC OID:  1: "off", 2: "static", 3: "dynamic", 4: "notSupported"
+airATPC = {1: "off", 2: "On", 3: "dynamic", 4: "no"}
+
+
+def inventory_radwin_hbs(info):
+    for line in info[0]:
+        if line[0]:
+            sector_id = str(line[0])
+            yield (sector_id, {})
+
+
+def check_radwin_hbs(item, params, info):
+    for line in info[0]:
+
+        if (item == line[0]):
+            infotext = ""
+            perfdata = []
+            bandName, state, freq, bandCh, tx, txTotal, antenaGain, feederLos, eirp, dfs, atpc, be = line[
+                1:13]
+            be = be.split("|")
+
+            infotext = " - Freq: %sMHz/%dMHz, Tx power: %s/%s, eirp: %s, DFS: %s, ATPC: %s, Band: %s" % (
+                freq, int(bandCh) // 1000, tx, txTotal, eirp, airDFS.get(int(dfs)), airATPC.get(int(atpc)), bandName)
+
+            perfdata = [
+                ("Frequency", int(freq)),
+                ("Tx_Power", int(tx)),
+                ("Tx_Total_Power", int(txTotal)),
+                ("EIRP", int(eirp)),
+                ("Air_State", int(state)),
+                ("DFS", int(dfs)),
+                ("ATPC", int(atpc)),
+                ("BE_downlink", int(be[0])),
+                ("BE_uplink", int(be[1])),
+            ]
+
+            if (state != '7'):
+                infotext = " - AirState: " + airState.get(int(state)) + infotext
+                if ((state == '2') or (state == '3') or (state == '10') or (state == '11') or (state == '12') or (state == '13')):
+                    return(2, "CRIT" + infotext, perfdata)
+                else:
+                    return(1, "WARN" + infotext, perfdata)
+            else:
+                return(0, "OK" + infotext, perfdata)
+
+    return (3, "UNKNOWN - SectorID %s not found" % item)
+
+
+check_info['radwin_hbs'] = {
+    'check_function': check_radwin_hbs,
+    'service_description': 'SectorID %s',
+    'has_perfdata': True,
+    'inventory_function': inventory_radwin_hbs,
+    'snmp_info': [
+        (
+            '.1.3.6.1.4.1.4458.1000',
+            [
+                OID_END,
+                '3.1.42.1.2',           # 1 - Band Name
+                '3.1.42.1.3',           # 2 - Air State
+                '3.1.42.1.4',           # 3 - Frequency
+                '3.1.42.1.7',           # 4 - Channel Bandwidth
+                '3.1.42.1.5',           # 5 - Tx Power
+                '3.1.42.1.6',           # 6 - Total Tx Power
+                '3.1.42.1.8',           # 7 - Antena Gain: 0.1dBi resolution
+                '3.1.42.1.9',           # 8 - Feeder Los: 0.1dBm resolution
+                '3.1.42.1.10',          # 9 - Max EIRP
+                '3.1.42.1.11',          # 10 - DFS
+                '3.1.42.1.12',          # 11 - ATPC
+                '3.1.42.1.16',          # 12 - BE allocation % Down|UP
+            ]),
+        (
+            '.1.3.6.1.4.1.4458.1000',
+            [
+                '1.1.3.0',              # 0 - Firmware
+                '1.1.6.0',              # 1 - IP MGMT
+                '1.1.29.0',             # 2 - Serial
+                '1.1.30.0',             # 3 - Model
+                '1.3.2.1.5.1',          # 4 - MAC
+                '1.3.5.0',              # 5 - SFP1 Module
+                '1.5.3.0',              # 6 - Sector name ID
+            ]),
+    ],
+    'snmp_scan_function': lambda oid: oid(".1.3.6.1.2.1.1.2.0").startswith('.1.3.6.1.4.1.4458.20.5.1.1'),
+    'group': 'radwin_hbs',
+}

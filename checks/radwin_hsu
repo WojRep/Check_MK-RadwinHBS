@@ -1,0 +1,101 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+#
+# Plugin for monitoring Radwin Base Station 5000 series
+#
+# Date: 2022-01-28
+#
+# Author: Wojciech Repiński
+# email: wrepinski@gmail
+#
+
+factory_settings["radwin_hsu_default_levels"] = {
+    'rss_hbs': (-65.0, -70.0),
+    'rss_hsu': (-65.0, -70.0),
+}
+
+
+def inventory_radwin_hsu(info):
+
+    for line in info:
+        mac = line[5]
+        if mac != "":
+            yield (mac, "radwin_hsu_default_levels")
+
+
+def check_radwin_hsu(item, params, info):
+
+    for line in info:
+        mac = line[5]
+        if mac != "":
+
+            rss_hbs_warn = 0
+            rss_hbs_crit = 0
+            rss_hsu_warn = 0
+            rss_hsu_crit = 0
+
+            if "rss_hbs" in params:
+                rss_hbs_warn, rss_hbs_crit = params["rss_hbs"]
+            if "rss_hsu" in params:
+                rss_hsu_warn, rss_hsu_crit = params["rss_hsu"]
+
+            if mac == item:
+
+                hsu_id = int(line[1])
+                hsu_location = line[2]
+                hsu_sn = line[6]
+                hsu_ip = line[9]
+
+                rss_hbs = int(line[7])
+                rss_hsu = int(line[8])
+
+                if rss_hbs < -95:
+                    rss_hbs = int(-95)
+                if rss_hsu < -95:
+                    rss_hsu = int(-95)
+
+                perfdata = [
+                    ("HBS_RSS_Rx", rss_hbs, rss_hbs_warn, rss_hbs_crit, -99, -30),
+                    ("HSU_RSS_Rx", rss_hsu, rss_hsu_warn, rss_hsu_crit, -99, -30),
+                ]
+
+                infotext = " - Klient ID: %d , %s , SN: %s, IP: %s, RSS Rx(HBS/HSU): %d/%d" % \
+                    (hsu_id, hsu_location, hsu_sn, hsu_ip, rss_hbs, rss_hsu)
+
+                if (rss_hbs <= rss_hbs_crit) or (rss_hsu <= rss_hsu_crit):
+                    return (2, "CRIT" + infotext, perfdata)
+                elif (rss_hbs <= rss_hbs_warn) or (rss_hsu <= rss_hsu_warn):
+                    return (1, "WARN" + infotext, perfdata)
+                elif (rss_hbs > rss_hbs_warn) or (rss_hsu > rss_hsu_warn):
+                    return (0, "OK" + infotext, perfdata)
+                else:
+                    return (0, "OK - Not connected" + infotext, perfdata)
+    if item != "":
+        return (2, "CRIT - HSU %s not found" % item)
+    else:
+        return (3, "UNKNOWN - HSU %s not found" % item)
+
+
+check_info['radwin_hsu'] = {
+    'check_function': check_radwin_hsu,
+    'service_description': 'HSU %s',
+    'has_perfdata': True,
+    'inventory_function': inventory_radwin_hsu,
+    'snmp_info':
+    ('.1.3.6.1.4.1.4458.1000.3.1', [
+        OID_END,
+        '6.2.1.4',              # 1 - HSU Name
+        '6.2.1.5',              # 2 - HSU Location name
+        '6.2.1.3',              # 3 - Max Downlink Kbps
+        '6.2.1.2',              # 4 - Max Uplin Kbps
+        '7.2.1.19',             # 5 - MAC address
+        '7.2.1.13',             # 6 - SN HSU
+        '7.2.1.9',              # 7 - RSS - HBS side
+        '7.2.1.11',             # 8 - RSS - HSU side
+        '6.2.1.31',             # 9 - IP address HSU
+    ]),
+    'snmp_scan_function': \
+    lambda oid: oid(".1.3.6.1.2.1.1.2.0").startswith('.1.3.6.1.4.1.4458.20.5.1.1'),
+    'default_levels_variable': 'radwin_hsu_default_levels',
+    'group': 'radwin_hsu',
+}
