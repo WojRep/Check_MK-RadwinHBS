@@ -15,19 +15,29 @@ factory_settings["radwin_hsu_default_levels"] = {
 }
 
 
+def _convert_mac(mac):
+    return "".join([ "%02X" % int(n,16) for n in mac.split(":") ])
+
+
 def inventory_radwin_hsu(info):
 
-    for line in info:
-        mac = line[5]
+    for line in info[0]:
+        mac = line[6]
         if mac != "":
+            mac = _convert_mac(mac) 
             yield (mac, "radwin_hsu_default_levels")
 
 
 def check_radwin_hsu(item, params, info):
 
-    for line in info:
-        mac = line[5]
+    hsu_params = info[1]
+
+    for line in info[0]:
+        mac = line[6]
         if mac != "":
+            hsu_sn = ""
+            rss_hbs = int(-95)
+            rss_hsu = int(-95)
 
             rss_hbs_warn = 0
             rss_hbs_crit = 0
@@ -39,20 +49,21 @@ def check_radwin_hsu(item, params, info):
             if "rss_hsu" in params:
                 rss_hsu_warn, rss_hsu_crit = params["rss_hsu"]
 
+            hsu_id = int(line[1])
+            hsu_location = line[2]
+            hsu_ip = line[5]
+
+            mac = _convert_mac(mac)
             if mac == item:
-
-                hsu_id = int(line[1])
-                hsu_location = line[2]
-                hsu_sn = line[6]
-                hsu_ip = line[9]
-
-                rss_hbs = int(line[7])
-                rss_hsu = int(line[8])
-
-                if rss_hbs < -95:
-                    rss_hbs = int(-95)
-                if rss_hsu < -95:
-                    rss_hsu = int(-95)
+                for hsu_param in hsu_params:
+                    if mac == hsu_param[0]:
+                        hsu_sn = hsu_param[1]
+                        rss_hbs = int(hsu_param[2])
+                        rss_hsu = int(hsu_param[3])
+                        if rss_hbs < -95:
+                            rss_hbs = int(-95)
+                        if rss_hsu < -95:
+                            rss_hsu = int(-95)
 
                 perfdata = [
                     ("HBS_RSS_Rx", rss_hbs, rss_hbs_warn, rss_hbs_crit, -99, -30),
@@ -77,24 +88,30 @@ def check_radwin_hsu(item, params, info):
 
 
 check_info['radwin_hsu'] = {
-    'check_function': check_radwin_hsu,
-    'service_description': 'HSU %s',
-    'has_perfdata': True,
-    'inventory_function': inventory_radwin_hsu,
-    'snmp_info':
-    ('.1.3.6.1.4.1.4458.1000.3.1', [
-        OID_END,
-        '6.2.1.4',              # 1 - HSU Name
-        '6.2.1.5',              # 2 - HSU Location name
-        '6.2.1.3',              # 3 - Max Downlink Kbps
-        '6.2.1.2',              # 4 - Max Uplin Kbps
-        '7.2.1.19',             # 5 - MAC address
-        '7.2.1.13',             # 6 - SN HSU
-        '7.2.1.9',              # 7 - RSS - HBS side
-        '7.2.1.11',             # 8 - RSS - HSU side
-        '6.2.1.31',             # 9 - IP address HSU
-    ]),
-    'snmp_scan_function': \
+    'check_function'        : check_radwin_hsu,
+    'service_description'   : 'HSU %s',
+    'has_perfdata'          : True,
+    'inventory_function'    : inventory_radwin_hsu,
+    'snmp_info'             : [ 
+                                ( '.1.3.6.1.4.1.4458.1000.3.1',
+                                [
+                                OID_END, 
+                                '6.2.1.4',              # 1 - HSU Name
+                                '6.2.1.5',              # 2 - HSU Location name
+                                '6.2.1.3',              # 3 - Max Downlink Kbps
+                                '6.2.1.2',              # 4 - Max Uplin Kbps
+                                '6.2.1.31',             # 5 - IP address HSU
+                                '6.2.1.12',             # 6 - MAC address           
+                                ]),
+                                ( '.1.3.6.1.4.1.4458.1000.3.1',
+                                [
+                                '7.2.1.19',             # 0 - MAC address
+                                '7.2.1.13',             # 1 - SN HSU
+                                '7.2.1.9',              # 2 - RSS - HBS side
+                                '7.2.1.11',             # 3 - RSS - HSU side
+                                ]),
+                            ],
+    'snmp_scan_function'    : \
     lambda oid: oid(".1.3.6.1.2.1.1.2.0").startswith('.1.3.6.1.4.1.4458.20.5.1.1'),
     'default_levels_variable': 'radwin_hsu_default_levels',
     'group': 'radwin_hsu',
