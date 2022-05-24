@@ -16,6 +16,6 @@ Plugin installation instructions : https://docs.checkmk.com/latest/en/mkps.html
 
 ![Screenshot 3](https://github.com/WojRep/Check_MK-RadwinHBS/blob/master/.html/Check_MK-RadwinHBS-3.png?raw=true)
 
-![Screenshot 41](https://github.com/WojRep/Check_MK-RadwinHBS/blob/master/.html/Check_MK-RadwinHBS-4.png?raw=true)
+![Screenshot 4](https://github.com/WojRep/Check_MK-RadwinHBS/blob/master/.html/Check_MK-RadwinHBS-4.png?raw=true)
 
 ![Screenshot 5](https://github.com/WojRep/Check_MK-RadwinHBS/blob/master/.html/Check_MK-RadwinHBS-5.png?raw=true)
