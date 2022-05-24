@@ -24,7 +24,7 @@ def inventory_radwin_hsu(info):
     for line in info[0]:
         mac = line[6]
         if mac != "":
-            mac = _convert_mac(mac) 
+            mac = _convert_mac(mac)
             yield (mac, "radwin_hsu_default_levels")
 
 
@@ -49,7 +49,7 @@ def check_radwin_hsu(item, params, info):
             if "rss_hsu" in params:
                 rss_hsu_warn, rss_hsu_crit = params["rss_hsu"]
 
-            hsu_id = int(line[1])
+            hsu_id = str(line[1])
             hsu_location = line[2]
             hsu_ip = line[5]
 
@@ -70,7 +70,7 @@ def check_radwin_hsu(item, params, info):
                     ("HSU_RSS_Rx", rss_hsu, rss_hsu_warn, rss_hsu_crit, -99, -30),
                 ]
 
-                infotext = " - Klient ID: %d , %s , SN: %s, IP: %s, RSS Rx(HBS/HSU): %d/%d" % \
+                infotext = " - Klient ID: %s , %s , SN: %s, IP: %s, RSS Rx(HBS/HSU): %d/%d" % \
                     (hsu_id, hsu_location, hsu_sn, hsu_ip, rss_hbs, rss_hsu)
 
                 if (rss_hbs <= rss_hbs_crit) or (rss_hsu <= rss_hsu_crit):
@@ -92,16 +92,16 @@ check_info['radwin_hsu'] = {
     'service_description'   : 'HSU %s',
     'has_perfdata'          : True,
     'inventory_function'    : inventory_radwin_hsu,
-    'snmp_info'             : [ 
+    'snmp_info'             : [
                                 ( '.1.3.6.1.4.1.4458.1000.3.1',
                                 [
-                                OID_END, 
+                                OID_END,
                                 '6.2.1.4',              # 1 - HSU Name
                                 '6.2.1.5',              # 2 - HSU Location name
                                 '6.2.1.3',              # 3 - Max Downlink Kbps
                                 '6.2.1.2',              # 4 - Max Uplin Kbps
                                 '6.2.1.31',             # 5 - IP address HSU
-                                '6.2.1.12',             # 6 - MAC address           
+                                '6.2.1.12',             # 6 - MAC address
                                 ]),
                                 ( '.1.3.6.1.4.1.4458.1000.3.1',
                                 [
