@@ -1,4 +1,4 @@
-{'author': 'Wojciech Repinski',
+{'author': u'Wojciech Repiński',
  'description': 'Plugin for monitoring Radwin Base Station 5000 series',
  'download_url': 'https://github.com/WojRep/Check_MK-RadwinHBS/',
  'files': {'agent_based': [],

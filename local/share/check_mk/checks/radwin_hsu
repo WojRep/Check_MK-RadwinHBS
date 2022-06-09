@@ -70,7 +70,7 @@ def check_radwin_hsu(item, params, info):
                     ("HSU_RSS_Rx", rss_hsu, rss_hsu_warn, rss_hsu_crit, -99, -30),
                 ]
 
-                infotext = " - Klient ID: %s , %s , SN: %s, IP: %s, RSS Rx(HBS/HSU): %d/%d" % \
+                infotext = " - CPE ID: %s , %s , SN: %s, IP: %s, RSS Rx(HBS/HSU): %d/%d" % \
                     (hsu_id, hsu_location, hsu_sn, hsu_ip, rss_hbs, rss_hsu)
 
                 if (rss_hbs <= rss_hbs_crit) or (rss_hsu <= rss_hsu_crit):
