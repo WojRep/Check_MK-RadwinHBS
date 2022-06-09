@@ -32,30 +32,27 @@ def _parameter_valuespec_radwin_hsu():
         Dictionary(
             title=_('Radwin HSU  Signal Params'),
             elements=[
-
                 ('rss_hbs', Tuple(
                     title=_('HBS Rx Signal'),
                     elements=[
                         Float(title=_('Warning at'), unit='dBm',
-                              default_value='-65',  # allow_empty=False
+                              default_value='-65',
                               ),
                         Float(title=_('Critical at'), unit='dBm',
-                              default_value='-70',  # allow_empty=False
+                              default_value='-70',
                               ),
                     ],)),
-
                 ('rss_hsu', Tuple(
                     title=_('HSU Rx Signal'),
                     elements=[
                         Float(title=_('Warning at'), unit='dBm',
-                              default_value='-65',  # allow_empty=False
+                              default_value='-65',
                               ),
                         Float(title=_('Critical at'), unit='dBm',
-                              default_value='-70',  # allow_empty=False
+                              default_value='-70',
                               ),
                     ],)),
             ],
-            #            allow_empty=False,
         ),
     )
 
