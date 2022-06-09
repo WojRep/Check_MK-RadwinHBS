@@ -20,7 +20,6 @@ from cmk.gui.valuespec import (
 
 from cmk.gui.plugins.wato import (
     CheckParameterRulespecWithItem,
-    CheckParameterRulespecWithoutItem,
     rulespec_registry,
     RulespecGroupCheckParametersOperatingSystem,
 )
@@ -60,7 +59,7 @@ def _parameter_valuespec_radwin_hsu():
 
 
 rulespec_registry.register(
-    CheckParameterRulespecWithoutItem(
+    CheckParameterRulespecWithItem(
         check_group_name="radwin_hsu",
         group=RulespecGroupCheckParametersNetworking,
         match_type="dict",
