@@ -24,6 +24,8 @@ from cmk.gui.plugins.wato import (
     RulespecGroupCheckParametersOperatingSystem,
 )
 
+def _item_valuespec_radwin_hsu():
+      return TextAscii(title=_("Radwin HSU"))
 
 def _parameter_valuespec_radwin_hsu():
     return Transform(
@@ -63,19 +65,8 @@ rulespec_registry.register(
         check_group_name="radwin_hsu",
         group=RulespecGroupCheckParametersNetworking,
         match_type="dict",
+        item_spec=_item_valuespec_radwin_hsu,
         parameter_valuespec=_parameter_valuespec_radwin_hsu,
         title=lambda: _("Radwin HSU"),
     )
 )
-
-# register_check_parameters(
-#     subgroup_networking,
-#     'radwin_hsu',
-#     _('Radwin HSU'),
-#     radwin_hsu_params,
-#     TextAscii(
-#         title=_("Radwin HSU"),
-#         allow_empty=False,
-#     ),
-#     match_type='dict',
-# )
